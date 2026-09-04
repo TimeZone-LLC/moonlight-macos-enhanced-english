@@ -224,16 +224,8 @@ struct StreamView: View {
           Divider()
 
           FormCell(title: "Language", contentWidth: 150) {
-            Picker("", selection: $languageManager.currentLanguage) {
-              ForEach(AppLanguage.allCases) { lang in
-                Text(languageManager.localize(lang.rawValue)).tag(lang)
-              }
-            }
-            .labelsHidden()
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .onChange(of: languageManager.currentLanguage) { _ in
-              languageManager.applyAppLanguage()
-            }
+            Text("English")
+              .frame(maxWidth: .infinity, alignment: .trailing)
           }
 
           Divider()

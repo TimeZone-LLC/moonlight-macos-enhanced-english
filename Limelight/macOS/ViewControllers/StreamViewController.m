@@ -656,6 +656,7 @@ highFreqMotor:(unsigned short)highFreqMotor {
     self.settingsDidChangeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
         [weakSelf updateWindowSubtitle];
         [weakSelf refreshInputDiagnosticsPreference];
+        [weakSelf refreshKeyboardShortcutCapture];
     }];
     self.streamShortcutSettingsDidChangeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:@"MoonlightStreamShortcutsDidChange" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -736,6 +737,16 @@ highFreqMotor:(unsigned short)highFreqMotor {
 }
 
 - (void)dealloc {
+    if (self.keyboardHotKeyModeToken != NULL) {
+        void *hotKeyModeToken = self.keyboardHotKeyModeToken;
+        if ([NSThread isMainThread]) {
+            PopSymbolicHotKeyMode(hotKeyModeToken);
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                PopSymbolicHotKeyMode(hotKeyModeToken);
+            });
+        }
+    }
     [[AwdlHelperManager sharedManager] endStreamSessionWithReason:@"stream-view-controller-dealloc"];
     [self releaseClipboardSyncOwnershipWithUnbind:NO];
     [self restoreStreamWindowChromeIfNeeded];

@@ -2878,6 +2878,17 @@ static inline NSPoint MLClampFreeMousePointToExitEdge(NSPoint point,
 
 #pragma mark - Actions
 
+- (void)refreshKeyboardShortcutCapture {
+    BOOL captureShortcuts = self.isMouseCaptured &&
+        [SettingsClass captureSystemShortcutsFor:self.app.host.uuid];
+    if (captureShortcuts && self.keyboardHotKeyModeToken == NULL) {
+        self.keyboardHotKeyModeToken = PushSymbolicHotKeyMode(kHIHotKeyModeAllDisabledExceptUniversalAccess);
+    } else if (!captureShortcuts && self.keyboardHotKeyModeToken != NULL) {
+        PopSymbolicHotKeyMode(self.keyboardHotKeyModeToken);
+        self.keyboardHotKeyModeToken = NULL;
+    }
+}
+
 - (void)captureMouse {
     if (![NSThread isMainThread]) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -2978,6 +2989,7 @@ static inline NSPoint MLClampFreeMousePointToExitEdge(NSPoint point,
     self.hasCoreHIDFreeMouseLastTruthPoint = NO;
     self.pendingHybridRemoteCursorSync = self.isRemoteDesktopMode && ![self usesAbsoluteRemoteDesktopPointerSync];
     self.isMouseCaptured = YES;
+    [self refreshKeyboardShortcutCapture];
     [self refreshMouseMovedAcceptanceState];
     [self updateControlCenterEntrypointHints];
     [self noteInputDiagnosticsCaptureArmed];
@@ -2999,6 +3011,10 @@ static inline NSPoint MLClampFreeMousePointToExitEdge(NSPoint point,
             [self uncaptureMouseWithCode:code reason:reason];
         });
         return;
+    }
+    if (self.keyboardHotKeyModeToken != NULL) {
+        PopSymbolicHotKeyMode(self.keyboardHotKeyModeToken);
+        self.keyboardHotKeyModeToken = NULL;
     }
     if (!self.isMouseCaptured && self.cursorHiddenCounter == 0 && !self.hidSupport.shouldSendInputEvents) {
         [self logMouseUncaptureStage:@"skip-already-released" code:code reason:reason];

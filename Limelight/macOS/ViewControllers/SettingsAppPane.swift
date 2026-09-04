@@ -999,9 +999,9 @@ private struct DebugLogLiveView: View {
   private var currentModeDisplayName: String {
     switch currentMode {
     case .defaultLog:
-      return "默认日志 / Default Log"
+      return "Default Log"
     case .raw:
-      return "原始日志 / Raw"
+      return "Raw"
     }
   }
 
@@ -1063,12 +1063,12 @@ private struct DebugLogLiveView: View {
 
   private var categoryMenuTitle: String {
     if selectedCategoryFilters.isEmpty {
-      return "未筛选 / No Filter"
+      return "No Filter"
     }
     if selectedCategoryFilters.count == 1 {
       return selectedCategoryDescriptors.first?.displayName ?? "1 Selected"
     }
-    return "已选 \(selectedCategoryFilters.count) 项 / \(selectedCategoryFilters.count) Selected"
+    return "\(selectedCategoryFilters.count) Selected"
   }
 
   private var selectedCategorySummary: String? {
@@ -1153,7 +1153,7 @@ private struct DebugLogLiveView: View {
 
   private func categoryFilterExportSummary() -> String {
     let selected = selectedCategoryDescriptors.map(\.displayName)
-    return selected.isEmpty ? "未筛选（显示全部） / No Filter (Showing All)" : selected.joined(separator: " | ")
+    return selected.isEmpty ? "No Filter (Showing All)" : selected.joined(separator: " | ")
   }
 
   private func scheduleSearchRefresh() {
@@ -1267,8 +1267,8 @@ private struct DebugLogLiveView: View {
           .font(.caption)
           .foregroundColor(.secondary)
         Picker("", selection: $settingsModel.debugLogMode) {
-          Text("默认日志 / Default").tag("default")
-          Text("原始日志 / Raw").tag("raw")
+          Text("Default").tag("default")
+          Text("Raw").tag("raw")
         }
         .pickerStyle(.segmented)
         .frame(width: 260)
@@ -1324,7 +1324,7 @@ private struct DebugLogLiveView: View {
       }
 
       HStack(spacing: 8) {
-        TextField("搜索关键词 / 主机 / 错误码 / 分类", text: $searchText)
+        TextField("Search keywords / host / error code / category", text: $searchText)
           .textFieldStyle(.roundedBorder)
 
         DebugLogCategoryFilterMenuButton(
@@ -1498,8 +1498,8 @@ private struct DebugLogCategoryFilterMenuButton: NSViewRepresentable {
 
       let statusItem = NSMenuItem(
         title: parent.selectedFilters.isEmpty
-          ? "当前未筛选（显示全部） / No Filter Applied"
-          : "清空分类筛选 / Clear Category Filters",
+          ? "No Filter Applied"
+          : "Clear Category Filters",
         action: parent.selectedFilters.isEmpty ? nil : #selector(handleClearAction(_:)),
         keyEquivalent: ""
       )
@@ -1513,7 +1513,7 @@ private struct DebugLogCategoryFilterMenuButton: NSViewRepresentable {
         item.image = systemImage(named: domain.systemImageName)
 
         let submenu = NSMenu(title: domain.displayName)
-        let allItem = NSMenuItem(title: "全部 / All", action: #selector(handleDomainAction(_:)), keyEquivalent: "")
+        let allItem = NSMenuItem(title: "All", action: #selector(handleDomainAction(_:)), keyEquivalent: "")
         allItem.target = self
         allItem.representedObject = domain.categoryKey
         allItem.state = parent.selectedFilters.contains(domain.categoryKey) ? .on : .off
@@ -1571,10 +1571,10 @@ private struct DebugLogEntryDetailView: View {
   var body: some View {
     VStack(spacing: 12) {
       HStack {
-        Text("日志详情 / Log Detail")
+        Text("Log Detail")
           .font(.headline)
         Spacer()
-        Button("关闭 / Close") {
+        Button("Close") {
           dismiss()
         }
       }
@@ -1596,7 +1596,7 @@ private struct DebugLogEntryDetailView: View {
       }
 
       VStack(alignment: .leading, spacing: 6) {
-        Text("默认视图 / Default View")
+        Text("Default View")
           .font(.caption)
           .foregroundColor(.secondary)
         Text(entry.defaultTitle)
@@ -1615,7 +1615,7 @@ private struct DebugLogEntryDetailView: View {
       Divider()
 
       VStack(alignment: .leading, spacing: 6) {
-        Text("解析消息 / Parsed Message")
+        Text("Parsed Message")
           .font(.caption)
           .foregroundColor(.secondary)
         Text(entry.message.isEmpty ? entry.rawLine : entry.message)
@@ -1627,7 +1627,7 @@ private struct DebugLogEntryDetailView: View {
       Divider()
 
       VStack(alignment: .leading, spacing: 6) {
-        Text("原始行 / Raw Line")
+        Text("Raw Line")
           .font(.caption)
           .foregroundColor(.secondary)
         ScrollView {

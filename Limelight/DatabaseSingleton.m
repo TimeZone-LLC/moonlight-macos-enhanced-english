@@ -81,14 +81,11 @@
                              [NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption,
                              [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption, nil];
     if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error]) {
-        // Log the error
         Log(LOG_E, @"Critical database error: %@, %@", error, [error userInfo]);
-        
-        // Drop the database
-        [[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil];
-        
-        // Try again
-        return [self persistentStoreCoordinator];
+        _persistentStoreCoordinator = nil;
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"Unable to open the saved Moonlight connections at %@. The database has been preserved. %@",
+                           storeURL.path, error.localizedDescription];
     }
     
     return _persistentStoreCoordinator;

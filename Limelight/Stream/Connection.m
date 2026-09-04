@@ -700,6 +700,16 @@ int ArInit(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION originalOpusC
         return -1;
     }
 
+    // RTSP currently discards audio socket/ping setup errors. Do not start a
+    // renderer when the host cannot discover where to send its audio packets.
+    if (conn->_connectionContext.audioContext.rtpSocket == INVALID_SOCKET ||
+        !conn->_connectionContext.audioContext.pingThreadStarted) {
+        Log(LOG_E, @"Audio transport initialization failed: socketReady=%d pingStarted=%d",
+            conn->_connectionContext.audioContext.rtpSocket != INVALID_SOCKET,
+            conn->_connectionContext.audioContext.pingThreadStarted);
+        return -1;
+    }
+
     int err;
     AudioChannelLayout channelLayout = {};
     OPUS_MULTISTREAM_CONFIGURATION opusConfig = {};

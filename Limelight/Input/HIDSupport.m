@@ -72,7 +72,7 @@ static struct KeyMapping keys[] = {
     {kVK_ANSI_KeypadDecimal, 0x6E},
     {kVK_ANSI_KeypadMultiply, 0x6A},
     {kVK_ANSI_KeypadPlus, 0x6B},
-    {kVK_ANSI_KeypadClear, 0xFE},
+    {kVK_ANSI_KeypadClear, 0x90},
     {kVK_ANSI_KeypadDivide, 0x6F},
     {kVK_ANSI_KeypadEnter, 0x0D},
     {kVK_ANSI_KeypadMinus, 0x6D},
@@ -962,7 +962,11 @@ static void HIDDispatchSyntheticRemoteModifierTap(HIDSupport *support,
 - (void)keyDown:(NSEvent *)event {
     if (self.shouldSendInputEvents) {
         [self syncKeyboardModifierStateForEvent:event];
-        short keyCode = 0x8000 | [self translateKeyCodeWithEvent:event];
+        short translatedKeyCode = [self translateKeyCodeWithEvent:event];
+        if (translatedKeyCode == 0) {
+            return;
+        }
+        short keyCode = 0x8000 | translatedKeyCode;
         char modifiers = [self translateKeyModifierWithEvent:event];
         PML_INPUT_STREAM_CONTEXT inputCtx = HIDInputContext(self);
         if (!HIDValidateInputContext(inputCtx, "keyDown")) {
@@ -977,7 +981,11 @@ static void HIDDispatchSyntheticRemoteModifierTap(HIDSupport *support,
 - (void)keyUp:(NSEvent *)event {
     if (self.shouldSendInputEvents) {
         [self syncKeyboardModifierStateForEvent:event];
-        short keyCode = 0x8000 | [self translateKeyCodeWithEvent:event];
+        short translatedKeyCode = [self translateKeyCodeWithEvent:event];
+        if (translatedKeyCode == 0) {
+            return;
+        }
+        short keyCode = 0x8000 | translatedKeyCode;
         char modifiers = [self translateKeyModifierWithEvent:event];
         PML_INPUT_STREAM_CONTEXT inputCtx = HIDInputContext(self);
         if (!HIDValidateInputContext(inputCtx, "keyUp")) {
@@ -1018,7 +1026,9 @@ static void HIDDispatchSyntheticRemoteModifierTap(HIDSupport *support,
     }
 
     self.keyboardPhysicalModifierSourceMask |= mask;
-    self.keyboardDeferredShortcutTranslationCommandMask |= mask;
+    if ([self usesKeyboardShortcutTranslationCompatibility]) {
+        self.keyboardDeferredShortcutTranslationCommandMask |= mask;
+    }
     [self syncKeyboardModifierStateForEvent:nil];
 }
 

@@ -489,7 +489,7 @@ static const NSString* HTTPS_PORT = @"47984";
         sops = NO;
     }
 
-    NSString* urlString = [NSString stringWithFormat:@"%@/launch?uniqueid=%@&appid=%@&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%@&rikeyid=%d%@%@&localAudioPlayMode=%d&surroundAudioInfo=%u",
+    NSString* urlString = [NSString stringWithFormat:@"%@/launch?uniqueid=%@&appid=%@&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%@&rikeyid=%d%@%@&localAudioPlayMode=%d&surroundAudioInfo=%u&continuousAudio=1",
                            _baseHTTPSURL, _sharedStreamUniqueId,
                            config.appID,
                            modeWidth, modeHeight, modeFps,
@@ -572,7 +572,7 @@ static const NSString* HTTPS_PORT = @"47984";
         sops = NO;
     }
 
-    NSString* urlString = [NSString stringWithFormat:@"%@/resume?uniqueid=%@&appid=%@&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%@&rikeyid=%d%@%@&localAudioPlayMode=%d&surroundAudioInfo=%u",
+    NSString* urlString = [NSString stringWithFormat:@"%@/resume?uniqueid=%@&appid=%@&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%@&rikeyid=%d%@%@&localAudioPlayMode=%d&surroundAudioInfo=%u&continuousAudio=1",
                            _baseHTTPSURL, _sharedStreamUniqueId,
                            config.appID,
                            modeWidth, modeHeight, modeFps,

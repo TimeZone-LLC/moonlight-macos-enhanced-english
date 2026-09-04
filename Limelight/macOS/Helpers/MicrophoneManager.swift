@@ -1130,37 +1130,36 @@ final class AwdlHelperManager: NSObject, ObservableObject {
         let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedMessage.isEmpty else {
             return isSandboxedBuild
-                ? "没有收到管理员授权结果。当前这个构建的安全限制可能拦住了系统授权窗。"
-                : "没有收到管理员授权结果，请重试。"
+                ? "No administrator authorization result was received. This build's security restrictions may have blocked the authorization dialog."
+                : "No administrator authorization result was received. Try again."
         }
 
         if trimmedMessage.contains("(-128)") {
-            return "你已取消管理员授权。"
+            return "Administrator authorization was canceled."
         }
 
         if trimmedMessage.localizedCaseInsensitiveContains("timed out") {
-            return "管理员授权超时，请重试。"
+            return "Administrator authorization timed out. Try again."
         }
 
         if trimmedMessage.contains("(-60005)") {
             return isSandboxedBuild
-                ? "系统没有正常弹出管理员授权窗口。当前这个构建的安全限制可能拦住了这类请求。"
-                : "管理员授权没有完成，请确认当前账户有管理员权限后重试。"
+                ? "The authorization dialog did not appear. This build's security restrictions may have blocked the request."
+                : "Administrator authorization did not complete. Check that your account has administrator privileges and try again."
         }
 
         if trimmedMessage.contains("(-10004)")
             || trimmedMessage.localizedCaseInsensitiveContains("not authorized")
             || trimmedMessage.localizedCaseInsensitiveContains("not permitted")
         {
-            return "系统拦截了管理员授权请求。"
+            return "The system blocked the administrator authorization request."
         }
 
         return trimmedMessage
     }
 
     private func awdlAuthorizationPrompt() -> String {
-        let preferredLanguage = Locale.preferredLanguages.first ?? "en"
-        let languageCode = preferredLanguage.hasPrefix("zh") ? "zh-Hans" : "en"
+        let languageCode: String = "en"
         let key = "AWDL Helper Authorization Prompt"
 
         if let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
@@ -1181,8 +1180,7 @@ final class AwdlHelperManager: NSObject, ObservableObject {
     }
 
     private func awdlInstallPrompt() -> String {
-        let preferredLanguage = Locale.preferredLanguages.first ?? "en"
-        let languageCode = preferredLanguage.hasPrefix("zh") ? "zh-Hans" : "en"
+        let languageCode: String = "en"
         let key = "AWDL Helper Install Prompt"
 
         if let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),

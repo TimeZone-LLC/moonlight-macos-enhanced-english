@@ -9,6 +9,10 @@
 #import <Cocoa/Cocoa.h>
 
 int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        [NSUserDefaults.standardUserDefaults setObject:@[@"en"] forKey:@"AppleLanguages"];
+        [NSUserDefaults.standardUserDefaults setObject:@"English" forKey:@"appLanguage"];
+    }
     return NSApplicationMain(argc, argv);
 }
  
