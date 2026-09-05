@@ -449,6 +449,7 @@ struct ShortcutReferenceView: View {
     ShortcutReferenceItem(action: StreamShortcutProfile.reconnectStreamAction, actionKey: "Reconnect Stream"),
     ShortcutReferenceItem(action: StreamShortcutProfile.openControlCenterAction, actionKey: "Open control center"),
     ShortcutReferenceItem(action: StreamShortcutProfile.toggleBorderlessWindowedAction, actionKey: "Toggle borderless / windowed (advanced)"),
+    ShortcutReferenceItem(action: StreamShortcutProfile.toggleHostOutputBlankAction, actionKey: "Toggle blank host output"),
   ]
 
   init(settingsModel: SettingsModel) {

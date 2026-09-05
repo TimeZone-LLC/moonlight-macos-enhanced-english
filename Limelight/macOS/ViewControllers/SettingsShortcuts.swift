@@ -62,6 +62,7 @@ final class StreamShortcutProfile: NSObject {
   static let reconnectStreamAction = "reconnectStream"
   static let openControlCenterAction = "openControlCenter"
   static let toggleBorderlessWindowedAction = "toggleBorderlessWindowed"
+  static let toggleHostOutputBlankAction = "toggleHostOutputBlank"
 
   private static let orderedActions = [
     releaseMouseCaptureAction,
@@ -74,6 +75,7 @@ final class StreamShortcutProfile: NSObject {
     reconnectStreamAction,
     openControlCenterAction,
     toggleBorderlessWindowedAction,
+    toggleHostOutputBlankAction,
   ]
 
   private static let supportedKeySymbols: [Int: String] = [
@@ -188,6 +190,7 @@ final class StreamShortcutProfile: NSObject {
       reconnectStreamAction: StreamShortcut(keyCode: kVK_ANSI_R, modifierFlags: [.control, .option]),
       openControlCenterAction: StreamShortcut(keyCode: kVK_ANSI_C, modifierFlags: [.control, .option]),
       toggleBorderlessWindowedAction: StreamShortcut(keyCode: kVK_ANSI_B, modifierFlags: [.control, .option, .command]),
+      toggleHostOutputBlankAction: StreamShortcut(keyCode: kVK_ANSI_B, modifierFlags: [.control, .option]),
     ]
   }
 
@@ -210,6 +213,11 @@ final class StreamShortcutProfile: NSObject {
 
     if shortcuts[reconnectStreamAction] == nil {
       normalized[reconnectStreamAction] = defaultShortcut(for: reconnectStreamAction)
+      didMigrate = true
+    }
+
+    if shortcuts[toggleHostOutputBlankAction] == nil {
+      normalized[toggleHostOutputBlankAction] = defaultShortcut(for: toggleHostOutputBlankAction)
       didMigrate = true
     }
 

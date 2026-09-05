@@ -4,6 +4,8 @@
 //
 
 #import "StreamViewController_Internal.h"
+#import "HttpManager.h"
+#import "IdManager.h"
 
 @implementation StreamViewController (MenuUI)
 
@@ -1519,6 +1521,17 @@
     fpsSubItem.submenu = fpsSubMenu;
     [monitorMenu addItem:fpsSubItem];
 
+    [monitorMenu addItem:[NSMenuItem separatorItem]];
+
+    // 6. Blank the host output (Foundation Sunshine) while the session stays connected
+    NSMenuItem *blankOutputItem = [[NSMenuItem alloc] initWithTitle:MLString(@"Blank Host Output", nil) action:@selector(toggleHostOutputBlankFromMenu:) keyEquivalent:@""];
+    [self applyShortcut:[self streamShortcutForAction:MLShortcutActionToggleHostOutputBlank] toMenuItem:blankOutputItem];
+    blankOutputItem.target = self;
+    blankOutputItem.state = self.hostOutputBlanked ? NSControlStateValueOn : NSControlStateValueOff;
+    blankOutputItem.enabled = !self.hostOutputBlankRequestInFlight;
+    setSymbol(blankOutputItem, @"moon.fill");
+    [monitorMenu addItem:blankOutputItem];
+
     monitorItem.submenu = monitorMenu;
     [self.streamMenu addItem:monitorItem];
 
@@ -2110,6 +2123,52 @@ static NSArray<NSNumber *> *bitrateStepsArray(void) {
     self.hideFullscreenControlBall = !self.hideFullscreenControlBall;
     [[NSUserDefaults standardUserDefaults] setBool:self.hideFullscreenControlBall forKey:[self fullscreenControlBallDefaultsKey]];
     [self requestStreamMenuEntrypointsVisibilityUpdate];
+}
+
+- (void)toggleHostOutputBlankFromMenu:(id)sender {
+    [self toggleHostOutputBlank];
+}
+
+- (void)toggleHostOutputBlank {
+    if (self.hostOutputBlankRequestInFlight) {
+        Log(LOG_I, @"[blank-output] Ignoring toggle while a request is in flight");
+        return;
+    }
+
+    NSString *address = self.app.host.activeAddress;
+    NSData *serverCert = self.app.host.serverCert;
+    if (address.length == 0 || serverCert == nil) {
+        Log(LOG_W, @"[blank-output] Host address or certificate unavailable, cannot toggle");
+        return;
+    }
+
+    BOOL requested = !self.hostOutputBlanked;
+    NSUInteger generation = self.activeStreamGeneration;
+    self.hostOutputBlankRequestInFlight = YES;
+    Log(LOG_I, @"[blank-output] Requesting host blank output %@", requested ? @"on" : @"off");
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        HttpManager *httpManager = [[HttpManager alloc] initWithHost:address uniqueId:[IdManager getUniqueId] serverCert:serverCert];
+        BOOL success = [httpManager setSunshineBlankOutput:requested];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            strongSelf.hostOutputBlankRequestInFlight = NO;
+            if (strongSelf.activeStreamGeneration != generation) {
+                return;
+            }
+            if (success) {
+                strongSelf.hostOutputBlanked = requested;
+                Log(LOG_I, @"[blank-output] Host confirmed blank output %@", requested ? @"on" : @"off");
+            } else {
+                Log(LOG_W, @"[blank-output] Host rejected the blank output request. This needs a Foundation Sunshine host with /blank-output support.");
+            }
+            [strongSelf rebuildStreamMenu];
+        });
+    });
 }
 
 - (void)toggleMouseMode {

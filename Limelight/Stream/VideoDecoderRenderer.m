@@ -9,6 +9,7 @@
 #import "VideoDecoderRenderer.h"
 #include "Limelight-internal.h"
 #import "RendererLayerContainer.h"
+#import "MLStreamPolicy.h"
 
 #include "Limelight.h"
 #include <math.h>
@@ -1124,6 +1125,7 @@ static BOOL MLGetSharedMetalPipelines(MTLPixelFormat pixelFormat,
     NSInteger _lastLoggedPendingTarget;
     MLDisplaySyncMode _displaySyncMode;
     NSInteger _frameQueueTargetOverride;
+    BOOL _streamIsLocal;
     NSInteger _timingResponsivenessBias;
     MLAllowDrawableTimeoutMode _allowDrawableTimeoutMode;
     BOOL _enableHdr;
@@ -2318,6 +2320,7 @@ static CGDirectDisplayID getDisplayID(NSScreen* screen)
     _timingSdrCompatibilityWorkaround = streamConfig ? streamConfig.timingSdrCompatibilityWorkaround : NO;
     _displaySyncMode = streamConfig ? (MLDisplaySyncMode)streamConfig.displaySyncMode : MLDisplaySyncModeAuto;
     _frameQueueTargetOverride = streamConfig ? streamConfig.frameQueueTarget : -1;
+    _streamIsLocal = streamConfig ? !streamConfig.streamingRemotely : NO;
     _timingResponsivenessBias = streamConfig ? streamConfig.timingResponsivenessBias : (_timingPrioritizeResponsiveness ? 1 : 0);
     _allowDrawableTimeoutMode = streamConfig ? (MLAllowDrawableTimeoutMode)streamConfig.allowDrawableTimeoutMode : MLAllowDrawableTimeoutModeAuto;
     _enableHdr = streamConfig ? streamConfig.enableHdr : NO;
@@ -2396,61 +2399,23 @@ static CGDirectDisplayID getDisplayID(NSScreen* screen)
 
 - (int)desiredPendingFramesForDisplayRefreshRate:(double)displayRefreshRate
 {
-    if (_frameQueueTargetOverride >= 0) {
-        return MLClampInt((int)_frameQueueTargetOverride, 0, 3);
-    }
-
-    int target = 1;
-    switch (_timingBufferLevel) {
-        case 0:
-            target = 0;
-            break;
-        case 2:
-            target = 2;
-            break;
-        default:
-            target = 1;
-            break;
-    }
-
-    if (_framePacingMode == 0) {
-        target = MIN(target, 1);
-        if (_smoothnessLatencyMode == 0) {
-            target = 0;
-        }
-    }
-
-    if (_timingResponsivenessBias >= 2) {
-        target -= 2;
-    } else if (_timingResponsivenessBias >= 1 || _timingPrioritizeResponsiveness) {
-        target -= 1;
-    }
-
-    if (_timingEnableVsync) {
-        target = MAX(target, 1);
-    }
-
-    if (_timingCompatibilityMode) {
-        target = MAX(target, 1);
-    }
-
-    if (_timingSdrCompatibilityWorkaround && !(videoFormat & VIDEO_FORMAT_MASK_10BIT)) {
-        target += 1;
-    }
-
-    if (_activeRendererMode == MLActiveVideoRendererModeEnhanced &&
-        !_timingEnableVsync &&
-        !_timingCompatibilityMode) {
-        target -= 1;
-    }
-
-    if (displayRefreshRate > 0 && displayRefreshRate < (double)self.frameRate * 0.90) {
-        if (_timingCompatibilityMode || _timingEnableVsync) {
-            target = MAX(target, 1);
-        } else {
-            target -= 1;
-        }
-    }
+    MLPacingPolicyInput policy = {
+        .timingBufferLevel = (int)_timingBufferLevel,
+        .framePacingMode = (int)_framePacingMode,
+        .smoothnessLatencyMode = (int)_smoothnessLatencyMode,
+        .responsivenessBias = (int)_timingResponsivenessBias,
+        .prioritizeResponsiveness = _timingPrioritizeResponsiveness ? true : false,
+        .enableVsync = _timingEnableVsync ? true : false,
+        .compatibilityMode = _timingCompatibilityMode ? true : false,
+        .sdrCompatibilityWorkaround = _timingSdrCompatibilityWorkaround ? true : false,
+        .tenBitVideo = (videoFormat & VIDEO_FORMAT_MASK_10BIT) != 0,
+        .enhancedRenderer = _activeRendererMode == MLActiveVideoRendererModeEnhanced,
+        .streamIsLocal = _streamIsLocal ? true : false,
+        .displayRefreshRate = displayRefreshRate,
+        .streamFrameRate = self.frameRate,
+        .frameQueueTargetOverride = (int)_frameQueueTargetOverride,
+    };
+    int target = MLDesiredPendingFrames(&policy);
 
     if (_activeRendererMode == MLActiveVideoRendererModeEnhanced &&
         !_timingEnableVsync &&

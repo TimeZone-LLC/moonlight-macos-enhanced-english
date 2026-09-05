@@ -9,6 +9,7 @@
 #import "Connection.h"
 #import "LogBuffer.h"
 #import "Utils.h"
+#import "MLStreamPolicy.h"
 
 #import "Moonlight-Swift.h"
 
@@ -41,8 +42,6 @@
 #undef EncryptionFeaturesEnabled
 
 #define AUDIO_QUEUE_BUFFERS 4
-#define AUDIO_DIRECT_BUFFER_DURATION 55
-#define AUDIO_ENHANCED_BUFFER_DURATION 60
 #define AUDIO_RENDER_SCRATCH_FRAMES 2048
 
 static const float kDirectRendererMakeupGain = 1.24f;
@@ -94,6 +93,8 @@ typedef NS_ENUM(NSInteger, MLAudioOutputMode) {
     MLAudioOutputModeDirect = 0,
     MLAudioOutputModeEnhanced = 1,
 };
+_Static_assert(MLAudioOutputModeDirect == MLStreamPolicyAudioModeDirect, "audio mode enum must match MLStreamPolicy");
+_Static_assert(MLAudioOutputModeEnhanced == MLStreamPolicyAudioModeEnhanced, "audio mode enum must match MLStreamPolicy");
 
 typedef NS_ENUM(NSInteger, MLAudioEnhancedOutputTarget) {
     MLAudioEnhancedOutputTargetHeadphones = 0,
@@ -234,10 +235,6 @@ static void *gClipboardQueueKey = &gClipboardQueueKey;
 
 #define OUTPUT_BUS 0
 
-// My iPod touch 5th Generation seems to really require 80 ms
-// of buffering to deliver glitch-free playback :(
-// FIXME: Maybe we can use a smaller buffer on more modern iOS versions?
-#define CIRCULAR_BUFFER_DURATION 80
 
 // (moved to instance fields)
 
@@ -626,15 +623,8 @@ static AVAudioChannelLayout *MLCreateAVAudioChannelLayout(int channelCount) {
     return [[AVAudioChannelLayout alloc] initWithLayoutTag:tag];
 }
 
-static int MLAudioRingBufferDurationForMode(MLAudioOutputMode mode) {
-    switch (mode) {
-        case MLAudioOutputModeEnhanced:
-            return AUDIO_ENHANCED_BUFFER_DURATION;
-        case MLAudioOutputModeDirect:
-            return AUDIO_DIRECT_BUFFER_DURATION;
-        default:
-            return CIRCULAR_BUFFER_DURATION;
-    }
+static int MLAudioRingBufferDurationForMode(MLAudioOutputMode mode, BOOL streamIsLocal) {
+    return MLAudioRingBufferDurationMs((int)mode, streamIsLocal ? true : false);
 }
 
 #if defined(LI_MIC_CONTROL_START)
@@ -721,7 +711,8 @@ int ArInit(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION originalOpusC
     conn->_audioSamplesPerFrame = opusConfig.samplesPerFrame;
     conn->_audioBufferStride = opusConfig.channelCount * opusConfig.samplesPerFrame;
     int frameDurationMs = MAX(1, (int)(opusConfig.samplesPerFrame / (opusConfig.sampleRate / 1000)));
-    int targetBufferDurationMs = MLAudioRingBufferDurationForMode((MLAudioOutputMode)conn->_audioOutputMode);
+    int targetBufferDurationMs = MLAudioRingBufferDurationForMode((MLAudioOutputMode)conn->_audioOutputMode,
+                                                                  conn->_streamConfig.streamingRemotely == STREAM_CFG_LOCAL);
     int bufferedFramesTarget = MAX(1, (targetBufferDurationMs + frameDurationMs - 1) / frameDurationMs);
     conn->_audioBufferEntries = MAX(2, bufferedFramesTarget + 1);
     conn->_audioCircularBuffer = malloc(conn->_audioBufferEntries * conn->_audioBufferStride * sizeof(short));

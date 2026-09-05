@@ -146,6 +146,7 @@
 | `Ctrl` + `Option` + `S` | 切换性能浮窗 | 串流窗口中 |
 | `Ctrl` + `Option` + `M` | 切换鼠标模式 | 串流窗口中 |
 | `Ctrl` + `Option` + `G` | 切换全屏悬浮球 | 全屏模式 |
+| `Ctrl` + `Option` + `B` | 切换主机黑屏输出（Foundation Sunshine） | 串流窗口中；主机停止采集并发送黑屏，直到再次切换 |
 | `Ctrl` + `Option` + `W` | 断开串流 | 串流窗口中 |
 | `Ctrl` + `Shift` + `W` | 断开并退出应用 | 串流窗口中 |
 | `Ctrl` + `Option` + `C` | 打开控制中心 | 仅全屏 / 无边框 |

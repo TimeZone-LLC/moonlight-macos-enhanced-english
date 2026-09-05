@@ -146,6 +146,7 @@ These Moonlight-specific stream shortcuts can be adjusted in `Settings → Input
 | `Ctrl` + `Option` + `S` | Toggle performance overlay | While streaming |
 | `Ctrl` + `Option` + `M` | Toggle mouse mode | While streaming |
 | `Ctrl` + `Option` + `G` | Toggle fullscreen control ball | Fullscreen only |
+| `Ctrl` + `Option` + `B` | Blank host output (Foundation Sunshine) | While streaming; host sends a black picture and stops capturing until toggled again |
 | `Ctrl` + `Option` + `W` | Disconnect stream | While streaming |
 | `Ctrl` + `Shift` + `W` | Disconnect and quit app | While streaming |
 | `Ctrl` + `Option` + `C` | Open control center | Fullscreen / borderless only |

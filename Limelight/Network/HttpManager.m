@@ -95,6 +95,53 @@
 
 @end
 
+@interface MLSunshineBlankOutputResponse : NSObject <Response>
+@property (nonatomic) NSInteger statusCode;
+@property (nonatomic, strong) NSString *statusMessage;
+@property (nonatomic, strong) NSData *data;
+@property (nonatomic) BOOL enabled;
+@end
+
+@implementation MLSunshineBlankOutputResponse
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _statusCode = 500;
+        _statusMessage = @"Server Error";
+        _enabled = NO;
+    }
+    return self;
+}
+
+- (void)populateWithData:(NSData *)data {
+    self.data = data;
+    if (data.length == 0) {
+        self.statusCode = 500;
+        self.statusMessage = @"Empty response";
+        return;
+    }
+
+    NSError *jsonError = nil;
+    id jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
+        self.statusCode = 500;
+        self.statusMessage = jsonError.localizedDescription ?: @"Invalid Sunshine blank output response";
+        return;
+    }
+
+    NSDictionary *json = (NSDictionary *)jsonObject;
+    NSNumber *statusCode = json[@"status_code"];
+    NSString *statusMessage = json[@"status_message"];
+    NSNumber *enabled = json[@"enabled"];
+
+    self.statusCode = [statusCode isKindOfClass:[NSNumber class]] ? statusCode.integerValue : 500;
+    self.statusMessage = statusMessage.length > 0 ? statusMessage : @"Server Error";
+    self.enabled = [enabled isKindOfClass:[NSNumber class]] ? enabled.boolValue : NO;
+}
+
+@end
+
 @implementation HttpManager {
     NSString* _baseHTTPURL;
     NSString* _baseHTTPSURL;
@@ -378,6 +425,25 @@ static const NSString* HTTPS_PORT = @"47984";
 
     Log(LOG_I, @"[sunshine] Loaded %lu host displays", (unsigned long)response.displays.count);
     return response.displays ?: @[];
+}
+
+- (NSURLRequest *)newBlankOutputRequest:(BOOL)enabled {
+    NSString *urlString = [NSString stringWithFormat:@"%@/blank-output?uniqueid=%@&enabled=%d", _baseHTTPSURL, _clientUniqueId, enabled ? 1 : 0];
+    return [self createRequestFromString:urlString timeout:SHORT_TIMEOUT_SEC];
+}
+
+- (BOOL)setSunshineBlankOutput:(BOOL)enabled {
+    MLSunshineBlankOutputResponse *response = [[MLSunshineBlankOutputResponse alloc] init];
+    HttpRequest *request = [HttpRequest requestForResponse:response withUrlRequest:[self newBlankOutputRequest:enabled]];
+    [self executeRequestSynchronously:request];
+
+    if (response.statusCode != 200 || response.enabled != enabled) {
+        Log(LOG_W, @"[sunshine] Blank output request failed: %ld %@", (long)response.statusCode, response.statusMessage ?: @"");
+        return NO;
+    }
+
+    Log(LOG_I, @"[sunshine] Host blank output is now %@", enabled ? @"on" : @"off");
+    return YES;
 }
 
 - (void)appendEncodedQueryParameter:(NSMutableString *)params key:(NSString *)key value:(NSString *)value {

@@ -2624,7 +2624,8 @@ static inline NSPoint MLClampFreeMousePointToExitEdge(NSPoint point,
         MLShortcutActionTogglePerformanceOverlay,
         MLShortcutActionToggleMouseMode,
         MLShortcutActionToggleFullscreenControlBall,
-        MLShortcutActionToggleBorderlessWindowed
+        MLShortcutActionToggleBorderlessWindowed,
+        MLShortcutActionToggleHostOutputBlank
     ];
     for (NSString *action in actions) {
         StreamShortcut *shortcut = [self streamShortcutForAction:action];
@@ -2860,6 +2861,12 @@ static inline NSPoint MLClampFreeMousePointToExitEdge(NSPoint point,
     if ([self event:event matchesShortcut:[self streamShortcutForAction:MLShortcutActionToggleFullscreenControlBall]]) {
         self.pendingOptionUncaptureToken += 1;
         [self toggleFullscreenControlBallVisibility];
+        return YES;
+    }
+
+    if ([self event:event matchesShortcut:[self streamShortcutForAction:MLShortcutActionToggleHostOutputBlank]]) {
+        self.pendingOptionUncaptureToken += 1;
+        [self toggleHostOutputBlank];
         return YES;
     }
 

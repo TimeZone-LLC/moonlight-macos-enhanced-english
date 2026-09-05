@@ -27,6 +27,8 @@
 - (NSURLRequest*) newLaunchRequest:(StreamConfiguration*)config;
 - (NSURLRequest*) newResumeRequest:(StreamConfiguration*)config;
 - (NSURLRequest*) newDisplaysRequest;
+- (NSURLRequest*) newBlankOutputRequest:(BOOL)enabled;
+- (BOOL) setSunshineBlankOutput:(BOOL)enabled;
 - (NSURLRequest*) newQuitAppRequest;
 - (NSURLRequest*) newAppAssetRequestWithAppId:(NSString*)appId;
 - (NSArray<NSDictionary<NSString*, id>*>*) fetchSunshineDisplays;

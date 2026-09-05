@@ -333,6 +333,8 @@
 "Offline" = "Offline";
 "Settings" = "Settings";
 "Connection Details" = "Connection Details";
+"Blank Host Output" = "Blank Host Output";
+"Toggle blank host output" = "Toggle blank host output";
 "Edit Connections" = "Edit Connections";
 
 /* Detail Fields */

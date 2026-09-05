@@ -949,6 +949,9 @@ highFreqMotor:(unsigned short)highFreqMotor {
     self.pendingDisconnectSource = nil;
     self.activeStreamGeneration += 1;
     NSUInteger streamGeneration = self.activeStreamGeneration;
+    // The host resets blank output when the last session ends, so every stream starts unblanked.
+    self.hostOutputBlanked = NO;
+    self.hostOutputBlankRequestInFlight = NO;
     [self releaseClipboardSyncOwnershipWithUnbind:NO];
     self.clipboardRuntimeConnection = nil;
     LiSetThreadConnectionContext(NULL);

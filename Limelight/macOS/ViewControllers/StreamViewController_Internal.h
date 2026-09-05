@@ -57,6 +57,7 @@ static NSString * const MLShortcutActionCloseAndQuitApp = @"closeAndQuitApp";
 static NSString * const MLShortcutActionReconnectStream = @"reconnectStream";
 static NSString * const MLShortcutActionOpenControlCenter = @"openControlCenter";
 static NSString * const MLShortcutActionToggleBorderlessWindowed = @"toggleBorderlessWindowed";
+static NSString * const MLShortcutActionToggleHostOutputBlank = @"toggleHostOutputBlank";
 
 static CGFloat const MLEdgeMenuButtonWidth = 78.0;
 static CGFloat const MLEdgeMenuButtonHeight = 78.0;
@@ -257,6 +258,9 @@ static const NSTimeInterval MLStatsOverlayRefreshIntervalSec = 0.5;
 @property (nonatomic) IOPMAssertionID powerAssertionID;
 
 @property (nonatomic, strong) NSVisualEffectView *overlayContainer;
+// Host-side blank output (Foundation Sunshine `/blank-output`). Confirmed state and request guard.
+@property (nonatomic) BOOL hostOutputBlanked;
+@property (nonatomic) BOOL hostOutputBlankRequestInFlight;
 @property (nonatomic, strong) NSTextField *overlayLabel;
 @property (nonatomic, strong) NSTimer *statsTimer;
 @property (nonatomic, strong) NSTimer *streamHealthTimer;
@@ -620,6 +624,8 @@ static const NSTimeInterval MLStatsOverlayRefreshIntervalSec = 0.5;
 - (void)handleBitrateApplyClicked:(NSButton *)sender;
 - (void)toggleFullscreenControlBallFromMenu:(NSMenuItem *)sender;
 - (void)toggleFullscreenControlBallVisibility;
+- (void)toggleHostOutputBlankFromMenu:(id)sender;
+- (void)toggleHostOutputBlank;
 - (void)toggleMouseMode;
 - (void)toggleMouseModeFromMenu:(id)sender;
 - (void)selectLockedMouseModeFromMenu:(id)sender;

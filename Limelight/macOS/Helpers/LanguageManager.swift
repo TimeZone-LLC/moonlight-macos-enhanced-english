@@ -217,6 +217,8 @@ public class LanguageManager: NSObject, ObservableObject {
     "Open control center": "Open control center",
     "Open control center (fullscreen / borderless only)": "Open control center (fullscreen / borderless only)",
     "Toggle borderless / windowed (advanced)": "Toggle borderless / windowed (advanced)",
+    "Toggle blank host output": "Toggle blank host output",
+    "Blank Host Output": "Blank Host Output",
     "Open Control Center: %@": "Open Control Center: %@",
     "Release mouse: %@": "Release mouse: %@",
 

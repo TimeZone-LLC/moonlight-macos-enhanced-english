@@ -968,7 +968,7 @@ extension SettingsModel {
     "Native Renderer": "Native Renderer (Recommended)",
     "Compatibility": "Compatibility Renderer",
   ]
-  static let defaultVideoCodec = "H.264"
+  static let defaultVideoCodec = "H.265"
   static let defaultVideoRendererMode = "Native Renderer (Recommended)"
   static let defaultVideoRendererModeRawValue = 2
   static let defaultHdr = false
